@@ -201,6 +201,7 @@ const analyze = (data, appData) => {
     const today = new Date();
     const oneDay = 1000 * 60 * 60 * 24; // (in milliseconds)
     appData.summary.full['days'] = Math.floor((today - lastDate) / oneDay);
+    appData.summary.year['days'] = Math.floor((appData.endDate - appData.startDate) / oneDay);
     var activeDaysSet = new Set();
     var activeDaysSelectedSet = new Set();
 
@@ -248,7 +249,6 @@ const analyze = (data, appData) => {
             appData.chartData.daysSelected[currentDate.getDay()] += 1;
 
             activeDaysSelectedSet.add(date);
-            appData.summary.year['days'] = Math.floor((appData.endDate - appData.startDate) / oneDay);
 
             for (var i = 0; i < keys.length; i++) {
                 if ((isEbike && i === 1) || (!isEbike && i === 2)) continue;
