@@ -128,7 +128,9 @@ class Popup extends HTMLElement {
     const data = dateRow.appendChild(document.createElement('tab-results'));
     data.addData();
 
-    const updateData = (option) => {
+    const updateData = (option, dateStr) => {
+      this.shadow.getElementById('tab1header').textContent = dateStr;
+      this.shadow.getElementById('tab2header').textContent = dateStr;
       var update = this.shadow.getElementById('days-table').getElementsByTagName('tr')
           update[1].children[1].innerHTML = data.data.summary[option][update[1].children[0].innerHTML]
           update[2].children[1].innerHTML = data.data.summary[option]['activeDays']
@@ -142,11 +144,23 @@ class Popup extends HTMLElement {
 
     this.shadow.getElementById('switch').addEventListener('click', (event) => {
       if (event.currentTarget.checked) {
-        updateData('full');
-        this.shadow.getElementById('tab1header').textContent = formatDate(data.data.summary.full.lastDate) + ' - ' +  formatDate( new Date() );
+        const dateStr = formatDate(data.data.summary.full.lastDate) + ' - ' +  formatDate( new Date() )
+        updateData('full', dateStr);
+        data.barChart.data.datasets.forEach((d) => {
+          d.data = data.data.chartData.monthAll[d.label]
+        })
+        data.barChart.update();
+        data.pieChart.data.datasets[0].data = data.data.chartData.daysAll;
+        data.pieChart.update()
       } else {
-        updateData('year')
-        this.shadow.getElementById('tab1header').textContent = formatDate(data.startDate) + ' - ' +  formatDate( data.endDate );
+        const dateStr = formatDate(data.startDate) + ' - ' +  formatDate( data.endDate );
+        updateData('year', dateStr)
+        data.barChart.data.datasets.forEach((d) => {
+          d.data = data.data.chartData.monthSelected[d.label]
+        })
+        data.barChart.update();
+        data.pieChart.data.datasets[0].data = data.data.chartData.daysSelected;
+        data.pieChart.update()
       }
     })
   } 
@@ -164,6 +178,8 @@ class TabResults extends HTMLElement  {
     super();
     this.startDate = '';
     this.endDate = '';
+    this.barChart = '';
+    this.pieChart = '';
     this.showTab = this.showTab.bind(this);
     this.addData = this.addData.bind(this);
     this.data = '';
@@ -201,8 +217,6 @@ class TabResults extends HTMLElement  {
     tab1header.className = 'date';
     tab1header.id = 'tab1header'
     tab1header.textContent = formatDate(this.startDate) + ' - ' +  formatDate(this.endDate);
-    //formatDate(this.data.startDate) + ' - ' +  formatDate( this.data.endDate );
-    //tab1header.textContent = formatDate(lastDate) + ' - ' +  formatDate(firstDate);
     const spacer1 = tab1header.appendChild(document.createElement('div'));
       spacer1.className = 'bap-result-spacer'
 
@@ -285,14 +299,14 @@ class TabResults extends HTMLElement  {
       datasets: [{
         label: 'ebikes',
         backgroundColor: 'rgb(255, 0, 191)',
-        data: this.data.chartData.monthAll['ebikes']
+        data: this.data.chartData.monthSelected['ebikes']
       }, {
         label: 'classic bikes',
         backgroundColor: 'rgba(30,144,200,255)',
-        data: this.data.chartData.monthAll['classic bikes']
+        data: this.data.chartData.monthSelected['classic bikes']
       }]
     }
-    var barChart = new Chart(bar, {
+    this.barChart = new Chart(bar, {
         type: 'bar',
         data: barChartData,
         options: {
@@ -326,13 +340,13 @@ class TabResults extends HTMLElement  {
     });
 
     var pie = shadow.getElementById('day-frequency');
-    var pieChart = new Chart(pie, {
+    this.pieChart = new Chart(pie, {
       type: 'pie',
       data: {
         labels: ['Sun', 'Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat'],
         datasets: [{
           label: 'My First Dataset',
-          data: this.data.chartData.daysAll,
+          data: this.data.chartData.daysSelected,
           backgroundColor: [
             'rgba(255, 99, 132, 0.2)',
             'rgba(255, 159, 64, 0.2)',
@@ -348,38 +362,14 @@ class TabResults extends HTMLElement  {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        tooltips: {enabled: true},
         plugins: {
           title: { display: true, text: 'Day Frequency' },
-          legend: {display: true, position: 'left'}
+          legend: {display: true, position: 'left'},
         },
       }
     })
-    /*
-    var pieChart = new Chart(pie, {
-      type: 'pie',
-      data: {datasets: pieChartData},
-      /*options: {
-        title: {
-          display: true,
-          text: 'Day Frequency',
-          position: top
-        }
-        /*
-        plugins: {
-          datalabels: {
-            formatter: (value, ctx) => {
-              let sum = 0;
-              let dataArr = ctx.chart.data.datasets[0].data;
-              dataArr.map(data => {sum += data;});
-              let percentage = (value * 100 / sum).toFixed(2) + "%";
-              return percentage;
-            },
-            color: '#fff',
-          }
-        }
-      }
-    })*/
-    
+
     const tab3header = shadow.getElementById('analysis').appendChild(document.createElement('p'));
     tab3header.className = 'date';
     tab3header.textContent = formatDate(new Date(startDate.concat('T00:00:00'))) + ' - ' +  formatDate(new Date(endDate.concat('T00:00:00')));
@@ -472,17 +462,6 @@ class TabResults extends HTMLElement  {
         col.innerHTML = d
       })
     })
-    /*
-    for (const obj in avg) {
-      var body = shadow.getElementById('num-rides-data-table').getElementsByTagName('tbody')[0];
-      var row = body.insertRow()
-      var col1 = row.insertCell(0);
-      col1.innerHTML = obj;
-      avg[obj].map((d, i) => {
-        var col = row.insertCell(i+1);
-        col.innerHTML = d
-      })
-    }*/
 
     shadow.getElementById('default').click();
   }
