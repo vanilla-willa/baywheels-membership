@@ -206,7 +206,6 @@ class TabResults extends HTMLElement  {
     shadow.getElementById('charts-tab').addEventListener("click", (e) => {this.showTab(e, 'charts'); });
     shadow.getElementById('analysis-tab').addEventListener("click", (e) => {this.showTab(e, 'analysis'); });
     this.data = getData(startDate, endDate);
-    console.log('data: ', this.data)
     
     const {days, activeDays, ...yearBikeData} = this.data.summary.year;
 
