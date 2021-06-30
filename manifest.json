@@ -1,0 +1,31 @@
+{
+  "manifest_version": 2,
+
+  "name": "Lyft Membership Membership",
+  "version": "1.0",
+  "description": "See if getting a Lyft membership worth it based on your ride history?",
+  "author": "wying",
+  "icons": {
+    "16": "logo16.png",
+    "48": "logo48.png",
+    "128": "logo128.png"
+  },
+  "page_action": {
+    "default_icon": "logo128.png"
+  },
+  "background": {
+    "scripts": ["background.js"],
+    "persistant": false
+   },
+  "content_scripts": [
+    {
+      "matches": ["https://account.baywheels.com/ride-history"],
+      "js": ["webcomponents-sd-ce.js", "chart.min.js", "calculate.js", "content.js"]
+    }
+  ],
+  "web_accessible_resources": ["style.css", "icons/*.svg", "sf-lineart.png"],
+  "permissions": [
+    "tabs",
+    "https://account.baywheels.com/ride-history"
+  ]
+}
