@@ -106,33 +106,6 @@ const resetData = (appData) => {
 function getData(start, end) {
     var dClass = new dataClass();
     var appData = dClass.data
-    /*var appData = {
-        summary: {
-            full: {
-                'firstDate': 0, 'lastDate': 0, 'days': 0, 'activeDays': 0, 
-                'classic bikes': [0,0,0], 'ebikes': [0,0,0], 'total': [0,0,0]
-            },
-            year: {
-                'firstDate': 0, 'lastDate': 0, 'days': 0, 'activeDays': 0, 
-                'classic bikes': [0,0,0], 'ebikes': [0,0,0], 'total': [0,0,0]
-            }
-        },
-        chartData: { 
-            monthAll: {
-                'ebikes': [0,0,0,0,0,0,0,0,0,0,0,0],
-                'classic bikes': [0,0,0,0,0,0,0,0,0,0,0,0]
-            },
-            daysAll: [0,0,0,0,0,0,0],
-            monthSelected: {
-                'ebikes': [0,0,0,0,0,0,0,0,0,0,0,0],
-                'classic bikes': [0,0,0,0,0,0,0,0,0,0,0,0]
-            },
-            daysSelected: [0,0,0,0,0,0,0]
-        },
-        monthlyAnalysis:  {},
-        startDate: '',
-        endDate: ''
-    }*/
     appData.startDate = new Date(start.concat('T00:00:00'));
     if (!end) {
         appData.endDate = new Date(start.concat('T00:00:00'));
@@ -220,7 +193,6 @@ const secondsToDhms = (seconds) => {
 const roundToTwo = (num) => +(Math.round(num + "e+2")  + "e-2");
 
 const analyze = (data, appData) => {
-    console.log('inside analyze: ', appData)
     const trips = data.length;
     const firstDate = new Date(data[0].innerText.split('\n')[0])
     appData.summary.full['firstDate'] = firstDate;

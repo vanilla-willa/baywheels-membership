@@ -1,3 +1,12 @@
+function formatDate(date) {
+  const offset = new Date().getTimezoneOffset();
+  var timezoneDate = new Date(date)
+    timezoneDate.setMinutes(timezoneDate.getMinutes() + offset)
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    timezoneDate = timezoneDate.toLocaleDateString('en-US', options);
+  return timezoneDate;
+}
+
 /* https://github.com/oslego/chrome-extension-custom-element */
 class Popup extends HTMLElement {
   constructor() {
@@ -112,20 +121,32 @@ class Popup extends HTMLElement {
     toggle.innerHTML = `
       <input type="checkbox" id="switch">
       <div class="label-text">
-        <span>Check to see full summary</span>
+        <span>Check to see data for all dates</span>
       </div>`
-    dateRow.appendChild(toggle)
+    if (!this.shadow.getElementById('switch')) dateRow.appendChild(toggle)
 
     const data = dateRow.appendChild(document.createElement('tab-results'));
     data.addData();
 
+    const updateData = (option) => {
+      var update = this.shadow.getElementById('days-table').getElementsByTagName('tr')
+          update[1].children[1].innerHTML = data.data.summary[option][update[1].children[0].innerHTML]
+          update[2].children[1].innerHTML = data.data.summary[option]['activeDays']
+        update = this.shadow.getElementById('bike-table').getElementsByTagName('tr')
+      for (var i = 1; i < update.length; i++ ) {
+        update[i].children[1].innerHTML = data.data.summary[option][update[i].children[0].innerHTML][0]
+        update[i].children[2].innerHTML = data.data.summary[option][update[i].children[0].innerHTML][1]
+        update[i].children[3].innerHTML = data.data.summary[option][update[i].children[0].innerHTML][2]
+      }
+    }
+
     this.shadow.getElementById('switch').addEventListener('click', (event) => {
-      console.log('test')
       if (event.currentTarget.checked) {
-        console.log("Checkbox is checked..");
-        console.log(this.shadow.getElementById('days-table').getElementsByTagName('td'))
+        updateData('full');
+        this.shadow.getElementById('tab1header').textContent = formatDate(data.data.summary.full.lastDate) + ' - ' +  formatDate( new Date() );
       } else {
-        console.log("Checkbox is not checked..");
+        updateData('year')
+        this.shadow.getElementById('tab1header').textContent = formatDate(data.startDate) + ' - ' +  formatDate( data.endDate );
       }
     })
   } 
@@ -141,8 +162,11 @@ class TabResults extends HTMLElement  {
   constructor() {
     // Always call super first in constructor
     super();
+    this.startDate = '';
+    this.endDate = '';
     this.showTab = this.showTab.bind(this);
     this.addData = this.addData.bind(this);
+    this.data = '';
     this.innerHTML = `
         <div class="tab">
           <button class="tab-option active" id='summary-tab'> Summary </button>
@@ -160,31 +184,24 @@ class TabResults extends HTMLElement  {
     var shadow = this.getRootNode();
     var startDate = shadow.host.startDate;
     var endDate = shadow.host.endDate;
+    this.startDate = new Date(startDate.concat('T00:00:00'));
+    this.endDate = new Date(endDate.concat('T00:00:00'));
     shadow.getElementById('summary-tab').addEventListener("click", (e) => {this.showTab(e, 'default');});
     shadow.getElementById('charts-tab').addEventListener("click", (e) => {this.showTab(e, 'charts'); });
     shadow.getElementById('analysis-tab').addEventListener("click", (e) => {this.showTab(e, 'analysis'); });
-    function formatDate(date) {
-      const offset = new Date().getTimezoneOffset();
-      var timezoneDate = new Date(date)
-        timezoneDate.setMinutes(timezoneDate.getMinutes() + offset)
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        timezoneDate = timezoneDate.toLocaleDateString('en-US', options);
-      return timezoneDate;
-    }
-    var data = getData(startDate, endDate);
-    console.log('data: ', data)
+    this.data = getData(startDate, endDate);
+    console.log('data: ', this.data)
     
-    var {firstDate, lastDate, days, activeDays, ...fullBikeData} = data.summary.full;
-    const fullDays = days;
-    const fullActiveDays = activeDays;
-    var {days, activeDays, ...yearBikeData} = data.summary.year;
+    const {days, activeDays, ...yearBikeData} = this.data.summary.year;
 
-    const avg = data.average;
-    const result = data.result;
+    const avg = this.data.average;
+    const result = this.data.result;
     
     const tab1header = shadow.getElementById('default').appendChild(document.createElement('p'));
     tab1header.className = 'date';
-    tab1header.textContent = formatDate(lastDate) + ' - ' +  formatDate( new Date() );
+    tab1header.id = 'tab1header'
+    tab1header.textContent = formatDate(this.startDate) + ' - ' +  formatDate(this.endDate);
+    //formatDate(this.data.startDate) + ' - ' +  formatDate( this.data.endDate );
     //tab1header.textContent = formatDate(lastDate) + ' - ' +  formatDate(firstDate);
     const spacer1 = tab1header.appendChild(document.createElement('div'));
       spacer1.className = 'bap-result-spacer'
@@ -208,16 +225,16 @@ class TabResults extends HTMLElement  {
     var col = row.insertCell(0);
     col.innerHTML = 'days';
     col = row.insertCell(1);
-    col.innerHTML = fullDays;
+    col.innerHTML = this.data.summary.year.days;
     row = body.insertRow()
     col = row.insertCell(0);
     col.innerHTML = 'active days';
     col = row.insertCell(1);
-    col.innerHTML = fullActiveDays;
+    col.innerHTML = this.data.summary.year.activeDays;
 
     shadow.getElementById('default').innerHTML += `
       <br>
-      <table id='summary-table'>
+      <table id='bike-table'>
         <caption>Bikes</caption>
         <thead>
           <tr>
@@ -231,12 +248,12 @@ class TabResults extends HTMLElement  {
         </tbody>
       </table>
       `
-    for (const obj in fullBikeData) {
-      var body = shadow.getElementById('summary-table').getElementsByTagName('tbody')[0];
+    for (const obj in yearBikeData) {
+      var body = shadow.getElementById('bike-table').getElementsByTagName('tbody')[0];
       var row = body.insertRow()
       var col1 = row.insertCell(0);
       col1.innerHTML = obj;
-      fullBikeData[obj].map((d, i) => {
+      yearBikeData[obj].map((d, i) => {
         var col = row.insertCell(i+1);
         col.innerHTML = d
       })
@@ -244,8 +261,8 @@ class TabResults extends HTMLElement  {
 
     const tab2header = shadow.getElementById('charts').appendChild(document.createElement('p'));
     tab2header.className = 'date';
-    tab2header.textContent = formatDate(lastDate) + ' - ' +  formatDate( new Date() );
-    //tab2header.textContent = formatDate(lastDate) + ' - ' +  formatDate(firstDate);
+    tab2header.id = 'tab2header'
+    tab2header.textContent = formatDate(this.startDate) + ' - ' +  formatDate(this.endDate);
     const spacer2 = tab2header.appendChild(document.createElement('div'));
       spacer2.className = 'bap-result-spacer';
     shadow.getElementById('charts').innerHTML += `
@@ -257,8 +274,8 @@ class TabResults extends HTMLElement  {
         </div>
     `
 
-    let max1 = Math.max.apply(null, data.chartData.monthAll['ebikes']);
-    let max2 = Math.max.apply(null, data.chartData.monthAll['classic bikes'])
+    let max1 = Math.max.apply(null, this.data.chartData.monthAll['ebikes']);
+    let max2 = Math.max.apply(null, this.data.chartData.monthAll['classic bikes'])
     const maxY = Math.max(max1, max2)
 
     var bar = shadow.getElementById('monthly-frequency');
@@ -268,11 +285,11 @@ class TabResults extends HTMLElement  {
       datasets: [{
         label: 'ebikes',
         backgroundColor: 'rgb(255, 0, 191)',
-        data: data.chartData.monthAll['ebikes']
+        data: this.data.chartData.monthAll['ebikes']
       }, {
         label: 'classic bikes',
         backgroundColor: 'rgba(30,144,200,255)',
-        data: data.chartData.monthAll['classic bikes']
+        data: this.data.chartData.monthAll['classic bikes']
       }]
     }
     var barChart = new Chart(bar, {
@@ -315,7 +332,7 @@ class TabResults extends HTMLElement  {
         labels: ['Sun', 'Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat'],
         datasets: [{
           label: 'My First Dataset',
-          data: data.chartData.daysAll,
+          data: this.data.chartData.daysAll,
           backgroundColor: [
             'rgba(255, 99, 132, 0.2)',
             'rgba(255, 159, 64, 0.2)',
