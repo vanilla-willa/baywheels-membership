@@ -4,6 +4,8 @@ function showPopup(tab) {
 
 chrome.pageAction.onClicked.addListener(showPopup);
 
+// need to setIcon
+
 var regex = RegExp(/https:\/\/account\.baywheels\.com\/ride-history/)
 
 const enableExtension = (tab) => {
