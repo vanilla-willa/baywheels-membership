@@ -8,8 +8,7 @@ I was curious whether subscription is actually worth it.
 ## Implementation:
 Tools used: shadow DOM, chart.js, CSS, Javascript
 
-## Chrome Extension design:
-User Flow:
+## User Flow:
 Navigate to https://account.baywheels.com/ride-history. By default, the extension popup will appear. User can close the popup and summon as needed by clicking on the extension again.
 Choose a date range. Only required to pick a start date.
 Earliest start date is restricted to the first bike ride in the user's history.
@@ -29,8 +28,27 @@ After submitting the date ranges, the result section appears underneath with thr
   * Day Frequency pie chart - shows the aggregate number of bikes taken per day of the week
 * Worth it?
   * Only analyzes the selected date range
-  * Gives recommendation of whether the person should subscribe to the membership
-  * Your Average Per Active Month table
+  * Gives recommendation of whether the person should subscribe to the membership based on the following analysis
+    * Your Average Per Active Month table
+      * Calculated based on up to a year's worth of data and calculated on a per month basis within the year 
+      * Active month means only months where the user had at least one bike ride. For example, a date range of February to May where the user was only active in February and March would result in calculating the total in February and the total in March, adding the totals, and dividing the result by 2, since there are only 2 active months.
+    * Consumer's Average Bike Data was calculated with Lyft's public data in 2021 (Note: Lyft only started segregating by bike type in April 2020)
+    * Based on the consumer's average bike data, with membership at $13.25/month or $159 yearly, the minimum # of rides per month should be at least: 
+      * 7 classic bikes a month
+      * 4 ebikes averaging 12-13 minutes
+      * Some combination of the two
+      * Reference Table
+        classic bikes  | ebikes
+        ------------- | -------------
+        7 | 0
+        6 | 1
+        5 | 1
+        4 | 2
+        3 | 3
+        2 | 3
+        1 | 4
+        0 | 4
+
 
 By default, the data displayed is the selected date range. There is a checkbox that the user can use to toggle between the selected date range and the user's entire ride history date range. The toggles update the data for the Summary and Visualization tabs.
 
