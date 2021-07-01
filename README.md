@@ -9,10 +9,11 @@ I was curious whether subscription is actually worth it.
 Tools used: shadow DOM, chart.js, CSS, Javascript
 
 ## User Flow:
-Navigate to https://account.baywheels.com/ride-history. By default, the extension popup will appear. User can close the popup and summon as needed by clicking on the extension again.
-Choose a date range. Only required to pick a start date.
-Earliest start date is restricted to the first bike ride in the user's history.
-The latest end date that can be selected is restricted to either the current date (user's local time) or a year after the selected start date, whichever occurs first.
+Navigate to https://account.baywheels.com/ride-history.  
+By default, the extension popup will appear. User can close the popup and summon as needed by clicking on the extension again.  
+Choose a date range. Only required to pick a start date.  
+Earliest start date is restricted to the first bike ride in the user's history.  
+The latest end date that can be selected is restricted to either the current date (user's local time) or a year after the selected start date, whichever occurs first.  
 
 After submitting the date ranges, the result section appears underneath with three tabs and the following data for the selected date ranges:
 * Summary
