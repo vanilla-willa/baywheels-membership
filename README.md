@@ -34,6 +34,8 @@ After submitting the date ranges, the result section appears underneath with thr
       * Calculated based on up to a year's worth of data and calculated on a per month basis within the year 
       * Active month means only months where the user had at least one bike ride. For example, a date range of February to May where the user was only active in February and March would result in calculating the total in February and the total in March, adding the totals, and dividing the result by 2, since there are only 2 active months.
     * Consumer's Average Bike Data was calculated with Lyft's public data in 2021 (Note: Lyft only started segregating by bike type in April 2020)
+      * See baywheels_trip_data.xlsb for data (note: May 2021 was removed in order to reduce file size for uploading)
+      ![pivot](https://github.com/vanilla-willa/baywheels-membership/blob/main/pivot_tables.png)
     * Based on the consumer's average bike data, with membership at $13.25/month or $159 yearly, the minimum # of rides per month should be at least: 
       * 7 classic bikes a month
       * 4 ebikes averaging 12-13 minutes
